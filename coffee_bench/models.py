@@ -40,15 +40,24 @@ def get_preprocess_fn(model_key: str):
 
 
 def build_cnn_basic(num_classes: int, img_size=(128, 128)):
-    """Basic CNN baseline."""
     return models.Sequential([
         layers.Input(shape=(*img_size, 3)),
-        layers.Conv2D(32, (3, 3), activation="relu"),
-        layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (3, 3), activation="relu"),
-        layers.MaxPooling2D((2, 2)),
+
+        layers.Conv2D(32, 3, padding="same", activation="relu"),
+        layers.MaxPooling2D(),
+        layers.BatchNormalization(),
+
+        layers.Conv2D(64, 3, padding="same", activation="relu"),
+        layers.MaxPooling2D(),
+        layers.BatchNormalization(),
+
+        layers.Conv2D(128, 3, padding="same", activation="relu"),
+        layers.MaxPooling2D(),
+        layers.BatchNormalization(),
+
         layers.Flatten(),
-        layers.Dense(64, activation="relu"),
+        layers.Dense(128, activation="relu"),
+        layers.Dropout(0.4),
         layers.Dense(num_classes, activation="softmax"),
     ])
 
