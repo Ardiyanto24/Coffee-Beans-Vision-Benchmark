@@ -115,6 +115,5 @@ def build_model(model_key: str,
                 base_model = layer
                 break
         if base_model is None:
-    return model
 
     return model
