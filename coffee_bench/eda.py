@@ -247,3 +247,45 @@ def materialize_split_folders(train_df: pd.DataFrame,
         shutil.copytree(test_dir, test_out, dirs_exist_ok=True)
 
     return {"train": train_out, "val": val_out, "test": test_out if copy_test else None}
+
+# eda.py (tambahan)
+def run_full_eda(train_dir: str, n_samples=3, seed=42, show_bad_n=8):
+    class_names = scan_classes(train_dir)
+    print("Classes:", class_names)
+
+    df = build_df_from_folders(train_dir, class_names)
+    print("Total images:", len(df))
+
+    # 1) sample grid
+    plot_samples_grid(train_dir, class_names=class_names, n_samples=n_samples, seed=seed)
+
+    # 2) label distribution
+    plot_label_distribution(df)
+
+    # 3) duplicates
+    df_h, dup_df, dup_groups = add_hash_and_find_duplicates(df)
+    print("Duplicate groups:", len(dup_groups))
+    if len(dup_groups) > 0:
+        # tampilkan 1 grup contoh
+        first_hash = list(dup_groups.index)[0]
+        print("Example dup hash:", first_hash)
+        for p in dup_groups[first_hash][:5]:
+            print(" -", p)
+
+    # 4) image stats
+    df_stats = add_image_stats(df)
+    plot_image_stats(df_stats)
+
+    # 5) quality heuristics
+    df_q = add_quality_scores(df_stats, use_noise=True)
+    df_q = add_quality_flags(df_q)
+    print("Bad quality count:", int(df_q["bad_quality"].sum()))
+    show_bad_samples(df_q, n=show_bad_n, seed=seed)
+
+    return {
+        "class_names": class_names,
+        "df": df,
+        "df_stats": df_stats,
+        "df_quality": df_q,
+        "dup_groups": dup_groups
+    }
